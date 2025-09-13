@@ -1,16 +1,27 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from ortools.sat.python import cp_model
 
-app = FastAPI()
+app = FastAPI(title="Shift Scheduler API")
+
+# Abilita CORS
+origins = ["*"]  # o specifica solo Netlify
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ScheduleRequest(BaseModel):
     workers: list[str]
     shifts: list[str]
-    H: dict[str, int]  # hours required per shift
-    M: dict[str, int]  # max hours per worker
-    avail: dict[str, int] 
-    forbidden_pairs: list[list[str]] = []  # JSON usa liste, non tuple
+    H: dict[str, int]
+    M: dict[str, int]
+    avail: dict[str, int]  # chiavi come "Alice,MonLunch"
+    forbidden_pairs: list[list[str]] = []
 
 @app.post("/schedule")
 def schedule(data: ScheduleRequest):
